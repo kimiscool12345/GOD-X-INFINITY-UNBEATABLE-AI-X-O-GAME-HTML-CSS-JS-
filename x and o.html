@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>∞ Cinematic God Riddle Challenge</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Poppins, sans-serif;
+            background: #000;
+            color: #fff;
+            text-align: center;
+            padding: 2rem;
+            overflow: hidden;
+        }
+
+        canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        h1 {
+            color: #ff00ff;
+            text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff44ff77;
+            font-size: 2.5em;
+            animation: float 2s ease-in-out infinite;
+        }
+
+        @keyframes float {
+
+            0%,
+            100% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        #game,
+        #startScreen {
+            margin-top: 2rem;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 25px;
+            padding: 2rem;
+            box-shadow: 0 0 30px #ff00ff55;
+            animation: pulse 3s infinite;
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 30px #ff00ff55;
+            }
+
+            50% {
+                box-shadow: 0 0 80px #ff00ffaa;
+            }
+        }
+
+        #riddle {
+            font-size: 1.3rem;
+            margin-bottom: 1rem;
+            animation: float 3s ease-in-out infinite;
+            padding: 1rem;
+            border-radius: 10px;
+            border: 2px solid #ff00ff;
+        }
+
+        input {
+            width: 80%;
+            max-width: 400px;
+            padding: 1rem;
+            border-radius: 10px;
+            border: none;
+            text-align: center;
+            font-size: 1.1rem;
+        }
+
+        button,
+        select {
+            margin-top: 1rem;
+            padding: .9rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            background: #ff00ff;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: .3s;
+        }
+
+        button:hover,
+        select:hover {
+            background: #ff44ff;
+            transform: scale(1.1);
+        }
+
+        #result {
+            margin-top: 1rem;
+            font-weight: bold;
+            min-height: 2rem;
+            text-shadow: 0 0 10px #ff00ff;
+        }
+
+        #timer {
+            margin-top: 1rem;
+            color: #00fff7;
+            font-weight: bold;
+            text-shadow: 0 0 10px #00fff7;
+        }
+
+        #highscore {
+            color: gold;
+            margin-top: .5rem;
+        }
+
+        #streak {
+            color: #ffea00;
+            margin-top: .5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas id="starCanvas"></canvas>
+    <h1>🧠 ∞ Cinematic God Riddle Challenge</h1>
+    <div id="startScreen">
+        <p>Select Difficulty:</p>
+        <select id="difficulty">
+            <option value="easy">Easy</option>
+            <option value="normal" selected>Normal</option>
+            <option value="hard">Hard</option>
+            <option value="impossible">Impossible</option>
+            <option value="super">Super Impossible</option>
+            <option value="god">God Mode</option>
+        </select>
+        <br>
+        <button onclick="startGame()">Start Game</button>
+    </div>
+    <div id="game" style="display:none;">
+        <p id="riddle">Loading riddle...</p>
+        <input id="answer" placeholder="Type your answer..." autocomplete="off">
+        <br>
+        <button onclick="checkAnswer()">Submit</button>
+        <button onclick="nextRiddle()">Next ➡️</button>
+        <p id="result"></p>
+        <p id="timer">⏳ Time: 30s</p>
+        <p id="highscore">🏆 Best IQ: 0</p>
+        <p id="streak">🔥 Streak: 0</p>
+    </div>
+
+    <script>
+        // ---------- Generate 999+ riddles dynamically ----------
+        const riddles = [];
+        for (let i = 1; i <= 999; i++) {
+            riddles.push({ q: `Riddle #${i}: What is ${i} + ${i}?`, a: `${i + i}` });
+        }
+        // GOD MODE ultra-hard riddles
+    const godRiddles = [
+            { q: "I can only live where there is light, but die if light touches me. What am I?", a: "shadow", god: true },
+            { q: "I have a heart that doesn’t beat. I can move but have no limbs. What am I?", a: "artichoke", god: true },
+            { q: "I’m heavier than mountains but lighter than air. I can swallow oceans but am invisible. What am I?", a: "time", god: true },
+            { q: "The more you take me, the more I grow. I can’t be held but can be measured. What am I?", a: "knowledge", god: true },
+            { q: "The more you take away from me, the bigger I become. What am I?", a: "hole", god: true },
+            { q: "I speak without a mouth and hear without ears. I have nobody, but I come alive with wind. What am I?", a: "echo", god: true },
+            { q: "I have cities but no houses, forests but no trees, and rivers but no water. What am I?", a: "map", god: true },
+            { q: "I am always hungry, I must always be fed, the finger I touch will soon turn red. What am I?", a: "fire", god: true },
+            { q: "I’m not alive, but I grow; I don’t have lungs, but I need air; I don’t have a mouth, but water kills me. What am I?", a: "fire", god: true },
+            { q: "I am taken from a mine and shut in a wooden case, from which I am never released, and yet I am used by almost every human. What am I?", a: "pencil lead", god: true },
+            { q: "I fly without wings, I cry without eyes. Wherever I go, darkness flies. What am I?", a: "cloud", god: true },
+            { q: "I turn everything around, but I cannot move. I can show you the world, but I’m not alive. What am I?", a: "mirror", god: true },
+            { q: "I can be cracked, made, told, and played. What am I?", a: "joke", god: true },
+            { q: "I am always in front of you but can never be seen. What am I?", a: "future", god: true },
+            { q: "I can bring tears to your eyes; resurrect the dead; make you smile; and reverse time. I form in an instant but last a lifetime. What am I?", a: "memory", god: true },
+            { q: "I am a word of letters three; add two and fewer there will be. What am I?", a: "few", god: true },
+            { q: "The more you share me, the more I grow. What am I?", a: "secret", god: true },
+            { q: "I can be cracked, I can be made, I can be told, I can be played. What am I?", a: "riddle", god: true },
+            { q: "I have keys but no locks. I have space but no room. You can enter, but you cannot go outside. What am I?", a: "keyboard", god: true },
+            { q: "I am invisible, I can destroy worlds, and I can be caught but never held. What am I?", a: "imagination", god: true },
+            { q: "I have no beginning, no end, and nothingness is my friend. What am I?", a: "eternity", god: true },
+            { q: "I am everywhere and nowhere, the essence of being, yet I have no form. What am I?", a: "consciousness", god: true },
+            { q: "I can devour everything: mountains, rivers, forests, and cities, yet I am weightless and timeless. What am I?", a: "entropy", god: true },
+            { q: "I am always moving, yet I never leave my place. I can guide you, but I am not alive. What am I?", a: "clock", god: true },
+            { q: "I grow without soil, I die without water, and I can touch the heavens without moving. What am I?", a: "fire", god: true },
+
+            // 🔥 New ultra-hard God Mode riddles
+            { q: "I have lakes with no water, mountains with no stone, and cities with no people. What am I?", a: "map", god: true },
+            { q: "I am the beginning of eternity, the end of time and space, the beginning of every end, and the end of every place. What am I?", a: "letter e", god: true },
+            { q: "I am the sound of one hand clapping, the riddle of existence, and the question that has no answer. What am I?", a: "paradox", god: true },
+            { q: "I am not alive, but I can grow; I have no mouth, yet I consume. What am I?", a: "fire", god: true },
+            { q: "I can be measured but not touched, can pass without moving, and I am stolen by everyone. What am I?", a: "time", god: true },
+            { q: "I am always running, never still; I can be spent but never saved. What am I?", a: "time", god: true },
+            { q: "I have no weight, yet I can crush worlds. I am invisible, yet feared by all. What am I?", a: "gravity", god: true },
+            { q: "I am the beginning of everything, the end of nothing, the essence of all, yet seen by none. What am I?", a: "void", god: true },
+            { q: "I am the thing that breaks but never falls, and the thing that falls but never breaks. What am I?", a: "day and night", god: true },
+            { q: "I can be touched but never held, seen but never caught, and felt by all yet owned by none. What am I?", a: "wind", god: true },
+            { q: "I exist only when I am broken. What am I?", a: "egg", god: true },
+            { q: "I am always ahead but never arrive. What am I?", a: "future", god: true },
+            { q: "I am a room with no doors or windows. What am I?", a: "mushroom", god: true },
+            { q: "I can hold everything but weigh nothing. What am I?", a: "memory", god: true },
+            { q: "I can run but never walk, have a mouth but never talk. What am I?", a: "river", god: true },
+            { q: "I am an instrument you can hear but never see. What am I?", a: "voice", god: true },
+            { q: "I am invisible, I can bind and free, I can kill and heal. What am I?", a: "time", god: true },
+            { q: "I am always in motion, but I never move. What am I?", a: "clock", god: true },
+            { q: "I am lighter than air but can crush you if held. What am I?", a: "thought", god: true },
+            { q: "I am a bridge that no one can cross, a wall that no one can touch. What am I?", a: "imagination", god: true }
+        ];
+        riddles.push(...godRiddles);
+
+        // ---------- Starfield & FX ----------
+        const canvas = document.getElementById("starCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let stars = [];
+        for (let i = 0; i < 300; i++) { stars.push({ x: Math.random() * canvas.width, y: Math.random() * canvas.height, r: Math.random() * 1.5 + 0.5, vx: (Math.random() - 0.5) * 0.4, vy: (Math.random() - 0.5) * 0.4 }); }
+        function animateStars() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let s of stars) {
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+                ctx.fillStyle = "#fff"; ctx.fill();
+                s.x += s.vx; s.y += s.vy;
+                if (s.x < 0) s.x = canvas.width; if (s.x > canvas.width) s.x = 0;
+                if (s.y < 0) s.y = canvas.height; if (s.y > canvas.height) s.y = 0;
+            }
+            requestAnimationFrame(animateStars);
+        }
+        animateStars();
+        function starFlash() { for (let s of stars) s.r = Math.random() * 3 + 1; setTimeout(() => { for (let s of stars) s.r = Math.random() * 1.5 + 0.5; }, 200); }
+        function lightningFlash() { ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.fillRect(0, 0, canvas.width, canvas.height); setTimeout(() => ctx.clearRect(0, 0, canvas.width, canvas.height), 50); }
+        function screenShake() { let x = 0, y = 0; const intensity = 5; const duration = 100; const start = Date.now(); function shake() { const now = Date.now(); if (now - start > duration) { canvas.style.transform = 'translate(0,0)'; return; } x = (Math.random() - 0.5) * intensity; y = (Math.random() - 0.5) * intensity; canvas.style.transform = `translate(${x}px,${y}px)`; requestAnimationFrame(shake); } shake(); }
+
+        // ---------- Game Variables ----------
+        let current = 0, iq = 0, timeLeft = 30, timer, highscore = Number(localStorage.getItem("highscore") || 0), streak = 0;
+        let speedMultiplier = 1, godMode = false;
+        const correctSound = new Audio("https://actions.google.com/sounds/v1/cartoon/clang_and_wobble.ogg");
+        const wrongSound = new Audio("https://actions.google.com/sounds/v1/cartoon/wood_plank_flicks.ogg");
+        document.getElementById("highscore").textContent = "🏆 Best IQ: " + highscore;
+
+        function startGame() {
+            const diff = document.getElementById("difficulty").value;
+            document.getElementById("startScreen").style.display = "none";
+            document.getElementById("game").style.display = "block";
+            godMode = diff === "god";
+            switch (diff) {
+                case "easy": speedMultiplier = 1; break;
+                case "normal": speedMultiplier = 1.2; break;
+                case "hard": speedMultiplier = 1.5; break;
+                case "impossible": speedMultiplier = 1.8; break;
+                case "super": speedMultiplier = 2; break;
+                case "god": speedMultiplier = 3; break;
+            }
+            iq = 0; streak = 0; nextRiddle();
+        }
+
+        function nextRiddle() {
+            clearInterval(timer);
+            timeLeft = Math.max(5, 30 - (iq / 1200) * speedMultiplier);
+            let availableRiddles = godMode ? riddles.filter(r => r.god) : riddles;
+            current = Math.floor(Math.random() * availableRiddles.length);
+            document.getElementById("riddle").textContent = availableRiddles[current].q;
+            document.getElementById("riddle").style.boxShadow = "0 0 20px #ff00ff,0 0 50px #ff44ff";
+            document.getElementById("result").textContent = "";
+            document.getElementById("answer").value = "";
+            document.getElementById("timer").textContent = "⏳ Time: " + Math.floor(timeLeft) + "s";
+            document.getElementById("streak").textContent = "🔥 Streak: " + streak;
+
+            timer = setInterval(() => {
+                timeLeft -= 0.1 * speedMultiplier;
+                document.getElementById("timer").textContent = "⏳ Time: " + Math.max(0, Math.floor(timeLeft)) + "s";
+                if (timeLeft <= 0) { clearInterval(timer); showResult(false); }
+            }, 100);
+        }
+
+        function checkAnswer() {
+            const ans = document.getElementById("answer").value.trim().toLowerCase();
+            let availableRiddles = godMode ? riddles.filter(r => r.god) : riddles;
+            showResult(ans === availableRiddles[current].a);
+        }
+
+        function showResult(correct) {
+            clearInterval(timer); starFlash(); if (correct) lightningFlash(); else screenShake();
+            const res = document.getElementById("result");
+            let availableRiddles = godMode ? riddles.filter(r => r.god) : riddles;
+            if (correct) {
+                streak++;
+                iq += 1000 * speedMultiplier * (1 + streak * 0.1);
+                correctSound.play();
+                res.innerHTML = "✅ Correct! IQ: " + Math.floor(iq);
+                // Particle explosion
+                for (let i = 0; i < 20; i++) { ctx.fillStyle = `hsl(${Math.random() * 360},100%,50%)`; ctx.beginPath(); ctx.arc(Math.random() * canvas.width, Math.random() * canvas.height, Math.random() * 3 + 1, 0, Math.PI * 2); ctx.fill(); }
+            } else {
+                streak = 0;
+                iq = Math.max(0, iq - 500 * speedMultiplier);
+                wrongSound.play();
+                res.innerHTML = `❌ Wrong! Answer: <b>${availableRiddles[current].a}</b><br>IQ: ${Math.floor(iq)}`;
+            }
+            if (iq > highscore) { highscore = iq; localStorage.setItem("highscore", highscore); document.getElementById("highscore").textContent = "🏆 Best IQ: " + Math.floor(highscore); }
+            document.getElementById("streak").textContent = "🔥 Streak: " + streak;
+            setTimeout(nextRiddle, 1500);
+        }
+    </script>
+</body>
+
+</html>
